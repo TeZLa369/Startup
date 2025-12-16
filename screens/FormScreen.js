@@ -1,4 +1,5 @@
 import {
+    Alert,
     Dimensions,
     KeyboardAvoidingView,
     Platform,
@@ -11,9 +12,55 @@ import {
 } from 'react-native';
 
 import { LinearGradient } from 'expo-linear-gradient';
+import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const { height, width } = Dimensions.get("window");
 
 export default function FormScreen({ navigation }) {
+    const [startupName, setStartupName] = useState("");
+    const [tagline, setTagline] = useState("");
+    const [description, setDescription] = useState("");
+
+
+
+
+    const details = {
+        rating: Math.floor(Math.random() * 101),
+        submitedName: "",
+        submittedTagline: "",
+        submittedDesc: "",
+        upVote: 0
+    };
+
+
+    function objData() {
+        details.submitedName = startupName,
+            details.submittedTagline = tagline,
+            details.submittedDesc = description
+    }
+
+    // ! SAVE
+    async function saveData() {
+        objData();
+
+        try {
+            await AsyncStorage.setItem(startupName, JSON.stringify(details));
+            Alert.alert("Saved", "Your idea is submitted", [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                },
+                {
+                    text: "Ok",
+                    onPress: () => { navigation.goBack() }
+                },
+            ])
+        } catch (error) {
+            console.error("Unable to save data: ", error);
+        }
+    }
+
+
     return (
         <LinearGradient
             colors={["#7B61FF", "#6A6CFF", "#3AA0FF"]}
@@ -40,6 +87,8 @@ export default function FormScreen({ navigation }) {
 
                         <Text style={styles.formLabel}>Startup Name</Text>
                         <TextInput
+                            onChangeText={(txt) => { setStartupName(txt) }}
+                            value={startupName}
                             placeholder="name here..."
                             placeholderTextColor="#B8B8B8"
                             style={styles.input}
@@ -47,6 +96,8 @@ export default function FormScreen({ navigation }) {
 
                         <Text style={styles.formLabel}>Tagline</Text>
                         <TextInput
+                            onChangeText={(txt) => { setTagline(txt) }}
+                            value={tagline}
                             placeholder="tagline here..."
                             placeholderTextColor="#B8B8B8"
                             style={styles.input}
@@ -54,6 +105,8 @@ export default function FormScreen({ navigation }) {
 
                         <Text style={styles.formLabel}>Description</Text>
                         <TextInput
+                            onChangeText={(txt) => { setDescription(txt) }}
+                            value={description}
                             placeholder="write about your idea..."
                             placeholderTextColor="#B8B8B8"
                             multiline
@@ -63,7 +116,8 @@ export default function FormScreen({ navigation }) {
 
                         <View style={styles.btnContainer}>
                             {/* //!BACK BTN */}
-                            <TouchableOpacity activeOpacity={0.85} style={styles.backWrapper} onPress={() => { navigation.goBack() }}>
+                            <TouchableOpacity
+                                activeOpacity={0.85} style={styles.backWrapper} onPress={() => { navigation.goBack() }}>
                                 <LinearGradient
                                     colors={["#FF0F0FFF", "#FF5E5EFF"]}
                                     style={styles.btn}
@@ -71,23 +125,40 @@ export default function FormScreen({ navigation }) {
                                     <Text style={styles.btnText}>Cancel</Text>
                                 </LinearGradient>
                             </TouchableOpacity>
+
                             {/*//! SUBMIT BTN */}
-                            <TouchableOpacity activeOpacity={0.85} style={styles.submitWrapper}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if (tagline === "" && startupName === "" && description === "") {
+                                        alert("Please enter the details!");
+                                    }
+                                    else if (tagline === "") {
+                                        alert("Please enter the tagline!");
+                                    } else if (startupName === "") {
+                                        alert("Please enter the startup name!");
+                                    }
+                                    else if (description === "") {
+                                        alert("Please enter the description!");
+                                    } else {
+                                        // objData();
+                                        saveData();
+                                    }
+                                }}
+
+
+                                activeOpacity={0.85} style={styles.submitWrapper}>
                                 <LinearGradient
                                     colors={["#7B61FF", "#3AA0FF"]}
-                                    style={styles.btn}
-                                >
+                                    style={styles.btn}>
+
                                     <Text style={styles.btnText}>Submit</Text>
                                 </LinearGradient>
                             </TouchableOpacity>
-
-
-
                         </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
-        </LinearGradient>
+        </LinearGradient >
     );
 }
 

@@ -1,5 +1,5 @@
 import { Dimensions, FlatList, StyleSheet, Text, View, Image } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 
 const { height, width } = Dimensions.get("window");
@@ -75,11 +75,12 @@ const leaderboardData = [
     score: 7.5,
   },
 ];
-
 const emptyNote = [];
 const Leaderboard = () => {
-  return (
+ 
 
+
+  return (
     <LinearGradient
       colors={["#7B61FF", "#6A6CFF", "#3AA0FF"]}
       style={styles.container}>
@@ -103,6 +104,7 @@ const Leaderboard = () => {
             {/* </View> */}
           </LinearGradient>
         )}
+
 
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
@@ -153,7 +155,8 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     textAlign: "center",
     padding: 9,
-    borderRadius: 20
+    borderRadius: 20,
+    marginRight:12
   },
   cardNameTxt: {
     fontSize: 18,

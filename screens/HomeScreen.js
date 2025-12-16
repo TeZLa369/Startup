@@ -1,9 +1,11 @@
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Dimensions } from 'react-native'
 import { Picker } from '@react-native-picker/picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from "@expo/vector-icons"
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 
@@ -14,6 +16,7 @@ const startupIdeas = [
         description: 'Generative design for sustainable cities.',
         aiRating: 94,
         upvotes: 1200,
+        tagline: 'Design tomorrow’s cities, today.'
     },
     {
         id: '2',
@@ -21,6 +24,7 @@ const startupIdeas = [
         description: 'Personalized cognitive enhancement platform.',
         aiRating: 4.1,
         upvotes: 980,
+        tagline: 'Unlock your mind’s full potential.'
     },
     {
         id: '3',
@@ -28,6 +32,7 @@ const startupIdeas = [
         description: 'Lab-grown meat, accessible to all.',
         aiRating: 51,
         upvotes: 750,
+        tagline: 'Future protein, made for everyone.'
     },
     {
         id: '4',
@@ -35,6 +40,7 @@ const startupIdeas = [
         description: 'Portable solar chargers for urban commuters.',
         aiRating: 85,
         upvotes: 620,
+        tagline: 'Power your journey with the sun.'
     },
     {
         id: '5',
@@ -42,6 +48,7 @@ const startupIdeas = [
         description: 'AI-powered mental health journaling assistant.',
         aiRating: 2.3,
         upvotes: 540,
+        tagline: 'Your thoughts, guided by AI.'
     },
     {
         id: '6',
@@ -49,13 +56,116 @@ const startupIdeas = [
         description: 'Microlearning platform for emerging tech skills.',
         aiRating: 8.0,
         upvotes: 490,
+        tagline: 'Forge skills, fast and future-ready.'
     },
 ];
+
+
 const empty = [];
 
+
 const { height, width } = Dimensions.get("window");
+
+
 const HomeScreen = ({ navigation }) => {
     const [sort, setsort] = useState("vote");
+
+    const [keys, setKeys] = useState([]);
+    const [userData, setUserData] = useState([]);
+    const [refreshing, setrefreshing] = useState(false);
+
+
+    async function updateDetails(rating, name, tag, desc, vote) {
+        const details = {
+            rating: rating,
+            submitedName: name,
+            submittedTagline: tag,
+            submittedDesc: desc,
+            upVote: vote
+        }
+
+
+        try {
+            await AsyncStorage.setItem(name, JSON.stringify(details));
+
+        } catch (error) {
+            console.error("Unable to save data: ", error);
+        }
+
+
+        await loadData();
+       
+    };
+
+
+    // ! Load Data
+    async function loadData() {
+        try {
+            const keys = await AsyncStorage.getAllKeys();
+            setKeys(keys);
+            userData.sort()
+
+            if (keys.length > 0) {
+                const data = await AsyncStorage.multiGet(keys);
+
+                let parsed = parseData(data);
+
+                if (sort === "rating") {
+                    parsed = parsed.sort((a, b) => b.rating - a.rating);
+                } else if (sort === "vote") {
+                    parsed = parsed.sort((a, b) => (b.upVotes || 0) - (a.upVotes || 0));
+                }
+
+                setUserData(parsed);
+
+            }
+        } catch (error) {
+            console.error("Error loading data", error);
+        }
+    }
+
+
+    // ! PARSE Data
+    function parseData(data) {
+        try {
+            const parsedIdeas = data.map(([key, value]) => {
+                return JSON.parse(value);
+            });
+            return parsedIdeas;
+
+        } catch (error) {
+            console.error("Invalid JSON:", error);
+            return null;
+        }
+    }
+
+
+    // ! Clear all data
+    async function clearAll() {
+        try {
+            AsyncStorage.clear();
+        } catch (error) {
+            console.error("Error in deleting data: ", error);
+        }
+    }
+
+    useFocusEffect(
+        useCallback(() => {
+            setrefreshing(true);
+            loadData().then(() =>
+                setrefreshing(false));
+        }, [sort])
+    );
+
+
+    async function handleRefresh() {
+        setrefreshing(true);
+        await loadData();
+        // await clearAll();
+        setrefreshing(false);
+    }
+
+
 
 
     return (
@@ -87,28 +197,37 @@ const HomeScreen = ({ navigation }) => {
 
 
             <FlatList style={styles.flatlistStyle}
-                data={startupIdeas}
-                keyExtractor={(item) => item.id}
+                data={userData}
+                keyExtractor={(item) => item.submitedName}
                 renderItem={({ item }) => (
                     <View style={styles.cardContainer}>
 
                         <View style={styles.cardSubContainer}>
-                            <Text style={styles.name}>{item.name}</Text>
-                            <Text style={styles.description}>{item.description}</Text>
+                            <Text style={styles.name}>{item.submitedName}</Text>
+                            <Text style={styles.name}>{item.submittedTagline}</Text>
+                            <Text style={styles.description}>{item.submittedDesc}</Text>
+
+                            {/* //! UPVOTE */}
                             <View style={styles.upvotesContainer}>
-                                <Ionicons style={styles.iconStyle} name='thumbs-up-outline' color={"#A69999FF"} size={20} />
-                                <Text style={styles.upvotes}>{item.upvotes} Upvotes</Text></View>
+                                <TouchableOpacity
+                                    onPress={async () => {
+                                        item.upVote === 0 ?
+                                            updateDetails(item.rating, item.submitedName, item.submittedTagline, item.submittedDesc, 1) : null
+                                    }}>
+                                    <Ionicons style={styles.iconStyle} name={item.upVote === 0 ? 'thumbs-up-outline' : "thumbs-up"}
+                                        color={item.upVote === 0 ? "#A69999FF" : "#EEFF00F0"} size={20} /></TouchableOpacity>
+                                <Text style={styles.upvotes}>{item.upVote} Upvotes</Text></View>
                         </View>
 
                         <View style={styles.ratingContainer}>
                             <Text style={styles.ratingTxt}>AI Rating</Text>
                             <Text style={[styles.ratingVal,
-                            { backgroundColor: item.aiRating >= 50 ? "#32AE40FF" : "#AE3232FF" }]}>{item.aiRating}/100</Text></View>
+                            { backgroundColor: item.rating >= 50 ? "#32AE40FF" : "#AE3232FF" }]}>{item.rating}/100</Text></View>
 
                     </View>
                 )}
-                refreshing={false}
-                onRefresh={() => { }}
+                refreshing={refreshing}
+                onRefresh={() => { handleRefresh() }}
                 ListEmptyComponent={() => (
                     <View style={styles.emptyList} >
                         <Text style={styles.emptyTxt} >Submit an idea</Text>
