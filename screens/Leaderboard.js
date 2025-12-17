@@ -1,6 +1,9 @@
 import { Dimensions, FlatList, StyleSheet, Text, View, Image } from 'react-native'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
 
 const { height, width } = Dimensions.get("window");
 const leaderboardData = [
@@ -75,9 +78,93 @@ const leaderboardData = [
     score: 7.5,
   },
 ];
-const emptyNote = [];
+
 const Leaderboard = () => {
- 
+
+  const [sort, setsort] = useState("vote");
+  const [refreshing, setrefreshing] = useState(false);
+  const [userData, setUserData] = useState([]);
+  const [keys, setKeys] = useState([]);
+
+
+  // ! LOAD Data
+  async function loadData() {
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      setKeys(keys);
+      userData.sort()
+
+      if (keys.length > 0) {
+        const data = await AsyncStorage.multiGet(keys);
+
+        let parsed = parseData(data);
+
+        if (sort === "rating") {
+          parsed = parsed.sort((a, b) => b.rating - a.rating);
+        } else if (sort === "vote") {
+          parsed = parsed.sort((a, b) => (b.upVotes || 0) - (a.upVotes || 0));
+        }
+
+        const topFive = parsed.length > 5 ? parsed.slice(0, 5) : parsed;
+
+        setUserData(topFive);
+
+      }
+    } catch (error) {
+      console.error("Error loading data", error);
+    }
+  }
+
+
+  // ! PARSE Data
+  function parseData(data) {
+    try {
+      const parsedIdeas = data.map(([key, value]) => {
+        return JSON.parse(value);
+      });
+      return parsedIdeas;
+
+    } catch (error) {
+      console.error("Invalid JSON:", error);
+      return null;
+    }
+  }
+
+
+  async function handleRefresh() {
+    setrefreshing(true);
+    await loadData();
+    // await clearAll();
+    setrefreshing(false);
+  }
+
+
+  useFocusEffect(
+    useCallback(() => {
+      setrefreshing(true);
+      loadData().then(() =>
+        setrefreshing(false));
+    }, [sort])
+  );
+
+
+  function imagePicker(index) {
+    if (index === 0) {
+      return require("../assets/1st.png")
+    }
+    else if (index === 1) {
+      return require("../assets/2nd.png")
+    }
+    else if (index === 2) {
+      return require("../assets/3rd.png")
+    }
+    else if (index === 3) {
+      return require("../assets/4th.png")
+    }
+    else if (index === 4) {
+      return require("../assets/5th.png")
+    }
+  }
 
 
   return (
@@ -85,26 +172,47 @@ const Leaderboard = () => {
       colors={["#7B61FF", "#6A6CFF", "#3AA0FF"]}
       style={styles.container}>
 
+
       <Text style={styles.headingTxt}>Leaderboard</Text>
+
+      {/* //! SORT */}
+      <LinearGradient style={styles.sortBtnContainer} colors={["#5F8BFF", "#78B2E7FF"]}>
+        <Text style={styles.sortTxt}>Sort by: </Text>
+        <Picker style={styles.pickerStyle}
+          selectedValue={sort}
+          onValueChange={(itemVal) => { setsort(itemVal) }}
+          dropdownIconColor={"#ffffff"}
+          mode='dropdown'
+          dropdownIconRippleColor={"#FFFFFF55"}
+        >
+          <Picker.Item label='Rating' value={"rating"} />
+          <Picker.Item label='Votes' value={"vote"} />
+        </Picker> </LinearGradient>
+
 
       {/* //! LIST */}
       <FlatList showsVerticalScrollIndicator={false}
-        data={leaderboardData}
-        renderItem={({ item }) => (
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        data={[]}
+        renderItem={({ item, index }) => (
           <LinearGradient style={styles.cardContainer}
             colors={["#ffffff", "#C1C1FFFF"]}>
-            {/* <View > */}
-            <Image source={require("../assets/1st.png")} style={styles.medalImg} />
+
+            <Image source=
+              {imagePicker(index)}
+              style={styles.medalImg} />
+
             <View style={styles.listTxtContainer}>
-              <Text style={styles.cardNameTxt}>{item.name}</Text>
-              <Text style={styles.cardDescTxt}>{item.description}</Text></View>
+              <Text style={styles.cardNameTxt}>{item.submitedName}</Text>
+              <Text style={styles.cardtagline}>{item.submittedTagline}</Text>
+              <Text style={styles.cardDescTxt}>{item.submittedDesc}</Text></View>
             <Text style={[styles.ratingVal,
-            { backgroundColor: item.aiRating >= 50 ? "#32AE40FF" : "#AE3232FF" }]}>{item.
-              score}/100</Text>
-            {/* </View> */}
+            { backgroundColor: item.rating >= 50 ? "#32AE40FF" : "#AE3232FF" }]}>{item.
+              rating}/100</Text>
+
           </LinearGradient>
         )}
-
 
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
@@ -122,6 +230,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  sortBtnContainer: {
+    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    width: 230,
+    borderRadius: 30,
+    marginTop: 12,
+    borderColor: "#FFFFFF33",
+    elevation: 10
+  },
+  pickerStyle: {
+    width: 130,
+    color: "white",
+  },
+  sortTxt: {
+    color: "#FFFFFFD9",
+    fontSize: 16
   },
   headingTxt: {
     marginTop: height * 0.06,
@@ -141,7 +267,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 12,
     elevation: 8
-
   },
   medalImg: {
     height: 70,
@@ -149,26 +274,29 @@ const styles = StyleSheet.create({
   },
   listTxtContainer: {
     width: 180
-
   },
   ratingVal: {
     color: "#FFFFFF",
     textAlign: "center",
     padding: 9,
     borderRadius: 20,
-    marginRight:12
+    marginRight: 12
   },
   cardNameTxt: {
     fontSize: 18,
     fontWeight: 700
   },
+  cardtagline: {
+    fontWeight: 600
+  },
   cardDescTxt: {
-
+    marginTop: 12,
   },
   emptyContainer: {
-    flex: 1,
-    alignItems: "center",
     justifyContent: "center",
+    marginTop: 12,
+    height: height * .6,
+
   },
   emptyTxt: {
     textAlign: "center",

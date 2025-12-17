@@ -75,6 +75,7 @@ const HomeScreen = ({ navigation }) => {
     const [refreshing, setrefreshing] = useState(false);
 
 
+
     async function updateDetails(rating, name, tag, desc, vote) {
         const details = {
             rating: rating,
@@ -84,9 +85,9 @@ const HomeScreen = ({ navigation }) => {
             upVote: vote
         }
 
-
         try {
             await AsyncStorage.setItem(name, JSON.stringify(details));
+
 
         } catch (error) {
             console.error("Unable to save data: ", error);
@@ -94,7 +95,7 @@ const HomeScreen = ({ navigation }) => {
 
 
         await loadData();
-       
+
     };
 
 
@@ -115,9 +116,7 @@ const HomeScreen = ({ navigation }) => {
                 } else if (sort === "vote") {
                     parsed = parsed.sort((a, b) => (b.upVotes || 0) - (a.upVotes || 0));
                 }
-
                 setUserData(parsed);
-
             }
         } catch (error) {
             console.error("Error loading data", error);
@@ -164,8 +163,6 @@ const HomeScreen = ({ navigation }) => {
         // await clearAll();
         setrefreshing(false);
     }
-
-
 
 
     return (
@@ -223,7 +220,6 @@ const HomeScreen = ({ navigation }) => {
                             <Text style={styles.ratingTxt}>AI Rating</Text>
                             <Text style={[styles.ratingVal,
                             { backgroundColor: item.rating >= 50 ? "#32AE40FF" : "#AE3232FF" }]}>{item.rating}/100</Text></View>
-
                     </View>
                 )}
                 refreshing={refreshing}
