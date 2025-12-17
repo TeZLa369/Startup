@@ -1,101 +1,36 @@
 import { Dimensions, FlatList, StyleSheet, Text, View, Image } from 'react-native'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
+import { ThemeContext } from '../App';
 
 const { height, width } = Dimensions.get("window");
-const leaderboardData = [
-  {
-    id: "1",
-    rank: 1,
-    name: "NeuroSphere",
-    description: "AI-driven cognitive enhancement platform",
-    score: 9.8,
-  },
-  {
-    id: "2",
-    rank: 2,
-    name: "EcoBuild",
-    description: "Sustainable materials for future construction",
-    score: 9.5,
-  },
-  {
-    id: "3",
-    rank: 3,
-    name: "QuantFund",
-    description: "Democratizing algorithmic trading",
-    score: 9.2,
-  },
-  {
-    id: "4",
-    rank: 4,
-    name: "HealthHive",
-    description: "Smart healthcare monitoring ecosystem",
-    score: 8.9,
-  },
-  {
-    id: "5",
-    rank: 5,
-    name: "AgroSense",
-    description: "AI-powered precision farming solutions",
-    score: 8.7,
-  },
-  {
-    id: "6",
-    rank: 6,
-    name: "EduSpark",
-    description: "Personalized learning for students using AI",
-    score: 8.5,
-  },
-  {
-    id: "7",
-    rank: 7,
-    name: "FinTrackr",
-    description: "Expense and investment tracking platform",
-    score: 8.2,
-  },
-  {
-    id: "8",
-    rank: 8,
-    name: "GreenGrid",
-    description: "Decentralized renewable energy management",
-    score: 8.0,
-  },
-  {
-    id: "9",
-    rank: 9,
-    name: "MediLink",
-    description: "Connecting patients with verified doctors instantly",
-    score: 7.8,
-  },
-  {
-    id: "10",
-    rank: 10,
-    name: "UrbanFlow",
-    description: "Smart traffic and city mobility optimization",
-    score: 7.5,
-  },
-];
+
 
 const Leaderboard = () => {
 
   const [sort, setsort] = useState("vote");
   const [refreshing, setrefreshing] = useState(false);
   const [userData, setUserData] = useState([]);
-  const [keys, setKeys] = useState([]);
 
+
+
+  const { theme, toggleTheme } = useContext(ThemeContext);
+
+  const ST = theme === "light" ? stylesLight : stylesDark;
 
   // ! LOAD Data
   async function loadData() {
     try {
       const keys = await AsyncStorage.getAllKeys();
-      setKeys(keys);
+
+      const filtedKeys = keys.filter(key => key !== "appTheme");
       userData.sort()
 
       if (keys.length > 0) {
-        const data = await AsyncStorage.multiGet(keys);
+        const data = await AsyncStorage.multiGet(filtedKeys);
 
         let parsed = parseData(data);
 
@@ -169,17 +104,22 @@ const Leaderboard = () => {
 
   return (
     <LinearGradient
-      colors={["#7B61FF", "#6A6CFF", "#3AA0FF"]}
-      style={styles.container}>
+      colors={theme === "light" ? ["#9A8BFFFF", "#9CB1FF", "#7FCCFF"]
+        : ["#5A3EEB", "#4A50E0", "#2C7FE8"]
+      }
+      style={ST.container}>
 
 
-      <Text style={styles.headingTxt}>Leaderboard</Text>
-      <Text style={styles.subHeadingTxt}>Top 5 Ideas</Text>
+      <Text style={ST.headingTxt}>Leaderboard</Text>
+      <Text style={ST.subHeadingTxt}>Top 5 Ideas</Text>
 
       {/* //! SORT */}
-      <LinearGradient style={styles.sortBtnContainer} colors={["#5F8BFF", "#78B2E7FF"]}>
-        <Text style={styles.sortTxt}>Sort by: </Text>
-        <Picker style={styles.pickerStyle}
+      <LinearGradient style={ST.sortBtnContainer} colors={theme === "light" ?
+        ["#6FA8FFFF", "#9BD0FFFF"] : ["#365BBAFF", "#4F7FD5FF"]
+
+      }>
+        <Text style={ST.sortTxt}>Sort by: </Text>
+        <Picker style={ST.pickerStyle}
           selectedValue={sort}
           onValueChange={(itemVal) => { setsort(itemVal) }}
           dropdownIconColor={"#ffffff"}
@@ -197,37 +137,38 @@ const Leaderboard = () => {
         onRefresh={handleRefresh}
         data={userData}
         renderItem={({ item, index }) => (
-          <LinearGradient style={styles.cardContainer}
-            colors={["#ffffff", "#C1C1FFFF"]}>
+          <LinearGradient style={ST.cardContainer}
+            colors={theme === "light" ? ["rgba(255, 255, 255, 0.85)", "rgba(233, 236, 255, 0.85)"]
+              : ["rgba(30, 22, 40, 0.85)", "rgba(50, 36, 69, 0.85)"]
+            }>
 
             <Image source=
               {imagePicker(index)}
-              style={styles.medalImg} />
+              style={ST.medalImg} />
 
-            <View style={styles.listTxtContainer}>
-              <Text style={styles.cardNameTxt}>{item.submitedName}</Text>
-              <Text style={styles.cardtagline}>{item.submittedTagline}</Text>
-              <Text style={styles.cardDescTxt}>{item.submittedDesc}</Text></View>
-            <Text style={[styles.ratingVal,
+            <View style={ST.listTxtContainer}>
+              <Text style={ST.cardNameTxt}>{item.submitedName}</Text>
+              <Text style={ST.cardtagline}>{item.submittedTagline}</Text>
+              <Text style={ST.cardDescTxt}>{item.submittedDesc}</Text></View>
+            <Text style={[ST.ratingVal,
             { backgroundColor: item.rating >= 50 ? "#32AE40FF" : "#AE3232FF" }]}>{item.
               rating}/100</Text>
-
           </LinearGradient>
         )}
 
         ListEmptyComponent={() => (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTxt}>Nothing to display</Text>
+          <View style={ST.emptyContainer}>
+            <Text style={ST.emptyTxt}>Nothing to display</Text>
           </View>
         )}
       />
-    </LinearGradient>
+    </LinearGradient >
   )
 }
 
-export default Leaderboard
+export default Leaderboard;
 
-const styles = StyleSheet.create({
+const stylesLight = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
@@ -281,7 +222,7 @@ const styles = StyleSheet.create({
     width: 70
   },
   listTxtContainer: {
-    width: 180
+    width: 180,
   },
   ratingVal: {
     color: "#FFFFFF",
@@ -312,4 +253,112 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     fontSize: 30
   },
-})
+});
+
+const stylesDark = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    backgroundColor: "#0E0F12",
+  },
+
+  headingTxt: {
+    marginTop: height * 0.06,
+    textAlign: "center",
+    fontSize: 34,
+    color: "#FFFFFF",
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+
+  subHeadingTxt: {
+    textAlign: "center",
+    color: "#D1D1D1",
+    fontSize: 18,
+    fontWeight: "500",
+    marginBottom: 10,
+  },
+
+  sortBtnContainer: {
+    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    width: 230,
+    borderRadius: 30,
+    marginTop: 12,
+    borderColor: "#FFFFFF22",
+    elevation: 6,
+    marginBottom: 12,
+  },
+
+  sortTxt: {
+    color: "#FFFFFFCC",
+    fontSize: 16,
+  },
+
+  pickerStyle: {
+    width: 130,
+    color: "#FFFFFF",
+  },
+
+  cardContainer: {
+    flexDirection: "row",
+    marginBottom: 12,
+    justifyContent: "space-evenly",
+    height: 150,
+    borderRadius: 18,
+    alignItems: "center",
+    marginTop: 12,
+    elevation: 6,
+
+  },
+
+  medalImg: {
+    height: 70,
+    width: 70,
+  },
+
+  listTxtContainer: {
+    width: 180,
+  },
+
+  cardNameTxt: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+
+  cardtagline: {
+    marginTop: 3,
+    fontWeight: "600",
+    color: "#D1D1D1",
+  },
+
+  cardDescTxt: {
+    marginTop: 12,
+    color: "#B8B8B8",
+  },
+
+  ratingVal: {
+    color: "#FFFFFF",
+    textAlign: "center",
+    padding: 9,
+    borderRadius: 22,
+    marginRight: 12,
+    minWidth: 70,
+  },
+
+
+  emptyContainer: {
+    justifyContent: "center",
+    marginTop: 12,
+    height: height * 0.6,
+  },
+
+  emptyTxt: {
+    textAlign: "center",
+    color: "#FFFFFF72",
+    fontStyle: "italic",
+    fontSize: 30,
+  },
+});
