@@ -174,6 +174,7 @@ const Leaderboard = () => {
 
 
       <Text style={styles.headingTxt}>Leaderboard</Text>
+      <Text style={styles.subHeadingTxt}>Top 5 Ideas</Text>
 
       {/* //! SORT */}
       <LinearGradient style={styles.sortBtnContainer} colors={["#5F8BFF", "#78B2E7FF"]}>
@@ -194,7 +195,7 @@ const Leaderboard = () => {
       <FlatList showsVerticalScrollIndicator={false}
         refreshing={refreshing}
         onRefresh={handleRefresh}
-        data={[]}
+        data={userData}
         renderItem={({ item, index }) => (
           <LinearGradient style={styles.cardContainer}
             colors={["#ffffff", "#C1C1FFFF"]}>
@@ -231,6 +232,20 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
+  headingTxt: {
+    marginTop: height * 0.06,
+    textAlign: "center",
+    fontSize: 34,
+    color: "#ffffff",
+    fontWeight: 700,
+    marginBottom: 12
+  },
+  subHeadingTxt: {
+    textAlign: "center",
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: 500
+  },
   sortBtnContainer: {
     justifyContent: "center",
     flexDirection: "row",
@@ -239,7 +254,8 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginTop: 12,
     borderColor: "#FFFFFF33",
-    elevation: 10
+    elevation: 10,
+    marginBottom: 12
   },
   pickerStyle: {
     width: 130,
@@ -249,17 +265,9 @@ const styles = StyleSheet.create({
     color: "#FFFFFFD9",
     fontSize: 16
   },
-  headingTxt: {
-    marginTop: height * 0.06,
-    textAlign: "center",
-    fontSize: 34,
-    color: "#ffffff",
-    fontWeight: 700,
-    marginBottom: 12
-  },
+
   cardContainer: {
     flexDirection: "row",
-    // backgroundColor: "#ffffff",
     marginBottom: 12,
     justifyContent: "space-evenly",
     height: 150,

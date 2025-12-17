@@ -42,7 +42,7 @@ const TabNav = () => {
         >
 
             <Tab.Screen name="ScreenNav" component={ScreenNav} />
-            <Tab.Screen name="Listing" component={Listing} />
+            {/* <Tab.Screen name="Listing" component={Listing} /> */}
             <Tab.Screen name="Leaderboard" component={Leaderboard} />
         </Tab.Navigator>
     )

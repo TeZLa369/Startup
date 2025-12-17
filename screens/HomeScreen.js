@@ -6,6 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from "@expo/vector-icons"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import { useToast } from 'react-native-toast-notifications';
+
 
 
 
@@ -68,8 +70,9 @@ const { height, width } = Dimensions.get("window");
 
 
 const HomeScreen = ({ navigation }) => {
-    const [sort, setsort] = useState("vote");
+    const toast = useToast();
 
+    const [sort, setsort] = useState("vote");
     const [keys, setKeys] = useState([]);
     const [userData, setUserData] = useState([]);
     const [refreshing, setrefreshing] = useState(false);
@@ -208,12 +211,16 @@ const HomeScreen = ({ navigation }) => {
                             <View style={styles.upvotesContainer}>
                                 <TouchableOpacity
                                     onPress={async () => {
-                                        item.upVote === 0 ?
-                                            updateDetails(item.rating, item.submitedName, item.submittedTagline, item.submittedDesc, 1) : null
+                                        if (item.upVote === 0) {
+                                            toast.show("Upvoted!");
+                                            updateDetails(item.rating, item.submitedName, item.submittedTagline, item.submittedDesc, 1)
+                                        }
+                                        else { toast.show("Already Upvoted!") }
+
                                     }}>
                                     <Ionicons style={styles.iconStyle} name={item.upVote === 0 ? 'thumbs-up-outline' : "thumbs-up"}
                                         color={item.upVote === 0 ? "#A69999FF" : "#EEFF00F0"} size={20} /></TouchableOpacity>
-                                <Text style={styles.upvotes}>{item.upVote} Upvotes</Text></View>
+                                <Text style={styles.upvotes}>{item.upVote}{item.upVote <= 1 ? " Upvote" : " Upvotes"}</Text></View>
                         </View>
 
                         <View style={styles.ratingContainer}>
@@ -221,7 +228,8 @@ const HomeScreen = ({ navigation }) => {
                             <Text style={[styles.ratingVal,
                             { backgroundColor: item.rating >= 50 ? "#32AE40FF" : "#AE3232FF" }]}>{item.rating}/100</Text></View>
                     </View>
-                )}
+                )
+                }
                 refreshing={refreshing}
                 onRefresh={() => { handleRefresh() }}
                 ListEmptyComponent={() => (
@@ -232,12 +240,12 @@ const HomeScreen = ({ navigation }) => {
                 )}
 
             />
-            <LinearGradient style={styles.floatingBtn} colors={["#4D6BFF", "#3AA0FF"]}>
+            < LinearGradient style={styles.floatingBtn} colors={["#4D6BFF", "#3AA0FF"]} >
                 <TouchableOpacity onPress={() => { navigation.navigate("FormScreen") }}>
                     <Ionicons name='add' color={"#ffffff"} size={30} />
                 </TouchableOpacity>
-            </LinearGradient>
-        </View>
+            </LinearGradient >
+        </View >
     )
 }
 
