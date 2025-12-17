@@ -65,7 +65,8 @@ export default function FormScreen({ navigation }) {
 
     return (
         <LinearGradient
-            colors={theme === "light" ? ["#7B61FF", "#6A6CFF", "#3AA0FF"] : ["#4A3B9EFF", "#2E338CFF", "#1B1F4DFF"]
+            colors={theme === "light" ? ["#7B61FF", "#6A6CFF", "#3AA0FF"] :
+                ["#4A3B9EFF", "#2E338CFF", "#1B1F4DFF"]
 
             }
             style={ST.container}

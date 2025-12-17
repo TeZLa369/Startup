@@ -14,6 +14,7 @@ const Leaderboard = () => {
   const [sort, setsort] = useState("vote");
   const [refreshing, setrefreshing] = useState(false);
   const [userData, setUserData] = useState([]);
+  const [expandedIndex, setExpandedIndex] = useState(null);
 
 
 
@@ -114,8 +115,9 @@ const Leaderboard = () => {
       <Text style={ST.subHeadingTxt}>Top 5 Ideas</Text>
 
       {/* //! SORT */}
-      <LinearGradient style={ST.sortBtnContainer} colors={theme === "light" ?
-        ["#6FA8FFFF", "#9BD0FFFF"] : ["#365BBAFF", "#4F7FD5FF"]
+      <LinearGradient style={ST.sortBtnContainer} colors={theme === "light" ? ["#5F8BFF", "#78B2E7FF"]
+        : ["#3A3F66", "#2A2D4F"]
+
 
       }>
         <Text style={ST.sortTxt}>Sort by: </Text>
@@ -149,7 +151,18 @@ const Leaderboard = () => {
             <View style={ST.listTxtContainer}>
               <Text style={ST.cardNameTxt}>{item.submitedName}</Text>
               <Text style={ST.cardtagline}>{item.submittedTagline}</Text>
-              <Text style={ST.cardDescTxt}>{item.submittedDesc}</Text></View>
+
+              <Text style={ST.cardDescTxt}>
+                {expandedIndex === index ? item.submittedDesc :
+                  item.submittedDesc.slice(0, 50)} </Text>
+
+              {item.submittedDesc.length > 50 ?
+                <Text style={[ST.cardDescTxt, { color: "#0000EE" }]}
+                  onPress={() => {
+                    setExpandedIndex(expandedIndex === index ? null : index)
+                  }}> {expandedIndex === index ? "Read less..." : "Read more..."}</Text> : null}
+
+            </View>
             <Text style={[ST.ratingVal,
             { backgroundColor: item.rating >= 50 ? "#32AE40FF" : "#AE3232FF" }]}>{item.
               rating}/100</Text>
@@ -211,11 +224,12 @@ const stylesLight = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 12,
     justifyContent: "space-evenly",
-    height: 150,
+    minHeight: 150,
     borderRadius: 18,
     alignItems: "center",
     marginTop: 12,
-    elevation: 8
+    elevation: 8,
+    paddingBottom: 12
   },
   medalImg: {
     height: 70,
@@ -232,6 +246,7 @@ const stylesLight = StyleSheet.create({
     marginRight: 12
   },
   cardNameTxt: {
+    marginTop: 12,
     fontSize: 18,
     fontWeight: 700
   },
@@ -305,11 +320,12 @@ const stylesDark = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 12,
     justifyContent: "space-evenly",
-    height: 150,
+    minHeight: 150,
     borderRadius: 18,
     alignItems: "center",
     marginTop: 12,
-    elevation: 6,
+    elevation: 8,
+    paddingBottom: 12
 
   },
 
@@ -326,6 +342,7 @@ const stylesDark = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: "#FFFFFF",
+    marginTop: 12,
   },
 
   cardtagline: {
@@ -337,6 +354,7 @@ const stylesDark = StyleSheet.create({
   cardDescTxt: {
     marginTop: 12,
     color: "#B8B8B8",
+
   },
 
   ratingVal: {

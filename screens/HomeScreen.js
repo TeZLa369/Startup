@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useToast } from 'react-native-toast-notifications';
 import { ThemeContext } from '../App';
 
+
 const { height, width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
@@ -24,6 +25,7 @@ const HomeScreen = ({ navigation }) => {
     const [sort, setsort] = useState('vote');
     const [userData, setUserData] = useState([]);
     const [refreshing, setrefreshing] = useState(false);
+    const [expandedIndex, setExpandedIndex] = useState(null);
 
 
     async function updateDetails(rating, name, tag, desc, vote) {
@@ -43,7 +45,6 @@ const HomeScreen = ({ navigation }) => {
 
         await loadData();
     }
-
 
     async function loadData() {
         try {
@@ -90,7 +91,6 @@ const HomeScreen = ({ navigation }) => {
         setrefreshing(false);
     }
 
-
     const ST = theme === 'light' ? stylesLight : stylesDark;
 
     return (
@@ -115,7 +115,9 @@ const HomeScreen = ({ navigation }) => {
                 {/* //! SORT */}
                 <LinearGradient
                     style={ST.sortBtnContainer}
-                    colors={['#5F8BFF', '#78B2E7FF']}
+                    colors={theme === "light" ? ["#5F8BFF", "#78B2E7FF"]
+                        : ["#3A3F66", "#2A2D4F"]
+                    }
                 >
                     <Text style={ST.sortTxt}>Sort by:</Text>
 
@@ -144,7 +146,7 @@ const HomeScreen = ({ navigation }) => {
                         <Text style={ST.emptyTxt}>Submit an idea</Text>
                     </View>
                 )}
-                renderItem={({ item }) => (
+                renderItem={({ item, index }) => (
                     <LinearGradient style={ST.cardContainer} colors={theme === "light" ? ["rgba(255, 255, 255, 0.85)", "rgba(233, 236, 255, 0.85)"]
                         : ["rgba(30, 22, 40, 0.85)", "rgba(50, 36, 69, 0.85)"]}>
                         {/* <View style={ST.cardContainer}> */}
@@ -153,7 +155,17 @@ const HomeScreen = ({ navigation }) => {
                         <View style={ST.cardSubContainer}>
                             <Text style={ST.name}>{item.submitedName}</Text>
                             <Text style={ST.tagline}>{item.submittedTagline}</Text>
-                            <Text style={ST.description}>{item.submittedDesc}</Text>
+
+                            <Text style={ST.description}>
+                                {expandedIndex === index ? item.submittedDesc :
+                                    item.submittedDesc.slice(0, 50)} </Text>
+
+                            {item.submittedDesc.length > 50 ?
+                                <Text style={[ST.description, { color: "#0000EE" }]}
+                                    onPress={() => {
+                                        setExpandedIndex(expandedIndex === index ? null : index)
+                                    }}> {expandedIndex === index ? "Read less..." : "Read more..."}</Text> : null}
+
 
                             {/* //! UPVOTE */}
                             <View style={ST.upvotesContainer}>
@@ -180,10 +192,8 @@ const HomeScreen = ({ navigation }) => {
                                                 : 'thumbs-up'
                                         }
                                         size={22}
-                                        color={
-                                            item.upVote === 0
-                                                ? '#A69999FF'
-                                                : '#EEFF00F0'
+                                        color={item.upVote === 0
+                                            ? '#A69999FF' : theme === "light" ? "#F4B400" : '#FFEA4D'
                                         }
                                         style={ST.iconStyle}
                                     />
@@ -311,7 +321,6 @@ const stylesLight = StyleSheet.create({
         flexDirection: 'row',
         margin: 12,
         padding: 12,
-        minHeight: 120,
         borderRadius: 18,
         borderWidth: 1,
         borderColor: '#E6E6E6',
@@ -336,7 +345,7 @@ const stylesLight = StyleSheet.create({
     description: {
         color: '#555',
         marginTop: 6,
-        maxWidth: 150
+        maxWidth: 220
     },
 
     upvotesContainer: {
@@ -460,7 +469,7 @@ const stylesDark = StyleSheet.create({
         flexDirection: 'row',
         margin: 12,
         padding: 12,
-        minHeight: 120,
+        // minHeight: 120,
         borderRadius: 18
     },
 
@@ -482,7 +491,7 @@ const stylesDark = StyleSheet.create({
     description: {
         color: '#BBBBBB',
         marginTop: 6,
-        maxWidth: 150
+        maxWidth: 220
     },
 
     upvotesContainer: {
