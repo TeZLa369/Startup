@@ -1,12 +1,10 @@
-import { createContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { ToastProvider } from 'react-native-toast-notifications';
 import TabNav from './navigation/TabNav';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-export const ThemeContext = createContext();
+import { ThemeContext } from "./context/ThemeContext";
 
 export default function App() {
   const [theme, setTheme] = useState("light");
@@ -27,14 +25,12 @@ export default function App() {
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-
       <ToastProvider>
         <NavigationContainer>
           <StatusBar style={theme === "dark" ? "light" : "dark"} />
           <TabNav />
         </NavigationContainer>
       </ToastProvider>
-
     </ThemeContext.Provider>
   );
 }

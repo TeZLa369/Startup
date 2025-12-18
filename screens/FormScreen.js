@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useContext, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useToast } from 'react-native-toast-notifications';
-import { ThemeContext } from '../App';
+import { ThemeContext } from '../context/ThemeContext';
 
 
 const { height, width } = Dimensions.get("window");

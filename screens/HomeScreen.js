@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useToast } from 'react-native-toast-notifications';
-import { ThemeContext } from '../App';
+import { ThemeContext } from '../context/ThemeContext';
 
 
 const { height, width } = Dimensions.get('window');
