@@ -1,49 +1,56 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import Leaderboard from '../screens/Leaderboard';
 import { Ionicons } from '@expo/vector-icons';
 import ScreenNav from './ScreenNav';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
-const Tab = createBottomTabNavigator();
+const Tab = createMaterialTopTabNavigator();
 
 const TabNav = () => {
     return (
         <Tab.Navigator
-            initialRouteName="ScreenNav"
+            tabBarPosition="bottom"
+            initialRouteName="Home"
             screenOptions={({ route }) => ({
-                tabBarIcon: () => {
-
-                    let iconSource;
-                    if (route.name === "ScreenNav") {
-                        iconSource = "home"
-                    }
-
-                    else if (route.name === "Listing") {
-                        iconSource = "document-text"
-                    }
-
-                    else if (route.name === "Leaderboard") {
-                        iconSource = "trophy"
-                    }
-                    return (
-                        <Ionicons color={"#ffffff"} name={iconSource} size={28} />
-                    )
-                },
-                tabBarShowLabel: true,
+                swipeEnabled: true,
                 headerShown: false,
+                tabBarShowLabel: true,
+                tabBarShowIcon: true,
                 tabBarStyle: {
                     backgroundColor: "#222",
+                    height: 70,
                 },
-                animation: 'shift'
+                tabBarLabelStyle: {
+                    color: "white",
+                    fontSize: 12
+                },
+                tabBarIndicatorStyle: {
+                    backgroundColor: "transparent",
+                },
+
+                tabBarIcon: ({ focused }) => {
+                    let iconName;
+
+                    if (route.name === "Home") {
+                        iconName = "home";
+                    } else if (route.name === "Leaderboard") {
+                        iconName = "trophy";
+                    }
+
+                    return (
+                        <Ionicons
+                            name={iconName}
+                            size={26}
+                            color={focused ? "#ffffff" : "#aaaaaa"}
+                        />
+                    );
+                },
             })}
         >
-
-            <Tab.Screen name="ScreenNav" component={ScreenNav} />
-           <Tab.Screen name="Leaderboard" component={Leaderboard} />
+            <Tab.Screen name="Home" component={ScreenNav} />
+            <Tab.Screen name="Leaderboard" component={Leaderboard} />
         </Tab.Navigator>
-    )
-}
+    );
+};
 
 export default TabNav;

@@ -46,10 +46,16 @@ const HomeScreen = ({ navigation }) => {
         await loadData();
     }
 
+    // ! LOAD 
     async function loadData() {
         try {
             const keys = await AsyncStorage.getAllKeys();
             const filteredKeys = keys.filter(k => k !== 'appTheme');
+
+            if (filteredKeys.length === 0) {
+                setUserData([]);
+                return;
+            }
 
             if (filteredKeys.length > 0) {
                 const data = await AsyncStorage.multiGet(filteredKeys);
@@ -75,6 +81,19 @@ const HomeScreen = ({ navigation }) => {
             console.error('Invalid JSON:', error);
             return [];
         }
+    }
+
+    // ! DELETE
+    async function deleteData(key) {
+        try {
+            await AsyncStorage.removeItem(key);
+            toast.show("Idea has been deleted!", { type: "warning" });
+
+            await loadData();
+        } catch (error) {
+            console.error("Unable to delete: ", error);
+        }
+
     }
 
 
@@ -164,7 +183,8 @@ const HomeScreen = ({ navigation }) => {
                                 <Text style={[ST.description, { color: "#0000EE" }]}
                                     onPress={() => {
                                         setExpandedIndex(expandedIndex === index ? null : index)
-                                    }}> {expandedIndex === index ? "Read less..." : "Read more..."}</Text> : null}
+                                    }}> {expandedIndex === index ? "Read less..." : "Read more..."}
+                                </Text> : null}
 
 
                             {/* //! UPVOTE */}
@@ -222,9 +242,15 @@ const HomeScreen = ({ navigation }) => {
                             >
                                 {item.rating}/100
                             </Text>
+                            <TouchableOpacity onPress={() => {
+                                deleteData(item.submitedName)
+                                // console.log(item.submitedName)
+                            }}>
+                                <Ionicons style={{ marginTop: 6 }} name='trash' size={28} color={theme === "light" ? "#8A8A8AFF" : "#ffffff"} />
+                            </TouchableOpacity>
                         </View>
                     </LinearGradient>
-                    // </View>
+
                 )
                 }
             />
@@ -307,11 +333,13 @@ const stylesLight = StyleSheet.create({
 
     emptyList: {
         flex: 1,
-        justifyContent: 'center'
+        justifyContent: 'center',
+        alignItems: "center",
+        height: height * .6
     },
 
     emptyTxt: {
-        color: '#777',
+        color: '#77777776',
         textAlign: 'center',
         fontSize: 28,
         fontStyle: 'italic'
@@ -455,7 +483,9 @@ const stylesDark = StyleSheet.create({
 
     emptyList: {
         flex: 1,
-        justifyContent: 'center'
+        justifyContent: 'center',
+        alignItems: "center",
+        height: height * .6
     },
 
     emptyTxt: {
