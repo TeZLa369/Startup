@@ -1,5 +1,6 @@
 import {
     FlatList,
+    Share,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -94,6 +95,25 @@ const HomeScreen = ({ navigation }) => {
             console.error("Unable to delete: ", error);
         }
 
+    }
+
+    // ! SHARE
+    async function shareIdea(name, tagline, desc, aiRating, upVote) {
+        const message =
+            `Startup Idea: ${name}\n` +
+            `Tagline: ${tagline}\n\n` +
+            `Description:\n${desc}\n\n` +
+            `AI Rating: ${aiRating}\n\n` +
+            `Upvotes: ${upVote}\n\n` +
+            `Shared from Startup Idea Evaluator App`;
+
+        try {
+            await Share.share({
+                message
+            });
+        } catch (error) {
+            console.log("Sharing cancelled", error);
+        }
     }
 
 
@@ -242,12 +262,19 @@ const HomeScreen = ({ navigation }) => {
                             >
                                 {item.rating}/100
                             </Text>
-                            <TouchableOpacity onPress={() => {
-                                deleteData(item.submitedName)
-                                // console.log(item.submitedName)
-                            }}>
-                                <Ionicons style={{ marginTop: 6 }} name='trash' size={28} color={theme === "light" ? "#8A8A8AFF" : "#ffffff"} />
-                            </TouchableOpacity>
+                            <View style={{ flexDirection: "row", marginTop: 6, gap: 12 }}>
+                                {/* //! Delete Btn */}
+                                <TouchableOpacity onPress={() => {
+                                    deleteData(item.submitedName)
+                                }}>
+                                    <Ionicons name='trash' size={28} color={theme === "light" ? "#8A8A8AFF" : "#ffffff"} />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity onPress={() => { shareIdea(item.submitedName, item.submittedTagline, item.submittedDesc, item.rating, item.upVote) }}>
+                                    <Ionicons name='share' size={28} color={theme === "light" ? "#8A8A8AFF" : "#ffffff"} />
+                                </TouchableOpacity>
+                            </View>
+
                         </View>
                     </LinearGradient>
 
